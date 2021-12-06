@@ -4,21 +4,22 @@ import axios from "axios"
 
 const ALGORITHM = "AES-GCM"
 const KEY_LENGTH = 256
+const NOTES_ENDPOINT = "/api/notes"
 
-const encodeText = text => {
+const encodeText = (text) => {
   return new TextEncoder().encode(text)
 }
 
-const decodeText = buffer => {
+const decodeText = (buffer) => {
   return new TextDecoder().decode(buffer)
 }
 
-const serializeBuffer = buffer => {
+const serializeBuffer = (buffer) => {
   return String.fromCharCode(...new Int8Array(buffer))
 }
 
-const deserializeBuffer = bufferString => {
-  const chars = Array.from(bufferString).map(ch => ch.charCodeAt())
+const deserializeBuffer = (bufferString) => {
+  const chars = Array.from(bufferString).map((ch) => ch.charCodeAt())
   return Int8Array.from(chars).buffer
 }
 
@@ -71,10 +72,10 @@ const decrypt = async (cypher, key, iv) => {
   }
 }
 
-const fetchNotes = async key => {
+const fetchNotes = async (key) => {
   try {
-    const response = await axios.get("/.netlify/functions/notes")
-    const notePromises = response.data.map(async note => {
+    const { data } = await axios.get(NOTES_ENDPOINT)
+    const notePromises = data.notes.map(async (note) => {
       note.entry = await decrypt(note.entry.cypher, key, note.entry.iv)
       return note
     })
@@ -97,7 +98,7 @@ const saveNote = async ({ date, entry }, key) => {
       },
     }
 
-    await axios.post("/.netlify/functions/notes", note)
+    await axios.post(NOTES_ENDPOINT, note)
     return note
   } catch (error) {
     console.warn("Save Note", error)
@@ -123,7 +124,7 @@ const IndexPage = () => {
     initData()
   }, [])
 
-  const onSubmit = async event => {
+  const onSubmit = async (event) => {
     event.preventDefault(event)
 
     const note = {
