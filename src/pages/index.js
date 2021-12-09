@@ -2,34 +2,9 @@ import React, { useRef, useState, useEffect } from "react"
 import localforage from "localforage"
 import axios from "axios"
 
-const ALGORITHM = "AES-GCM"
-const KEY_LENGTH = 256
+import { encrypt, decrypt, generateKey, generateNonce } from "../lib/crypto"
+
 const NOTES_ENDPOINT = "/api/notes"
-
-const encodeText = (text) => {
-  return new TextEncoder().encode(text)
-}
-
-const decodeText = (buffer) => {
-  return new TextDecoder().decode(buffer)
-}
-
-const serializeBuffer = (buffer) => {
-  return String.fromCharCode(...new Int8Array(buffer))
-}
-
-const deserializeBuffer = (bufferString) => {
-  const chars = Array.from(bufferString).map((ch) => ch.charCodeAt())
-  return Int8Array.from(chars).buffer
-}
-
-const generateKey = async () => {
-  return await window.crypto.subtle.generateKey(
-    { name: ALGORITHM, length: KEY_LENGTH },
-    true,
-    ["encrypt", "decrypt"]
-  )
-}
 
 const initKey = async () => {
   try {
@@ -40,35 +15,6 @@ const initKey = async () => {
     return await localforage.setItem("cryptokey", key)
   } catch (error) {
     console.error(error)
-  }
-}
-
-const generateNonce = () => {
-  const nonce = window.crypto.getRandomValues(new Int8Array(12))
-  return serializeBuffer(nonce)
-}
-
-const encrypt = async (text, key, iv) => {
-  const cypherBuffer = await window.crypto.subtle.encrypt(
-    { name: ALGORITHM, iv: deserializeBuffer(iv) },
-    key,
-    encodeText(text)
-  )
-
-  return serializeBuffer(cypherBuffer)
-}
-
-const decrypt = async (cypher, key, iv) => {
-  try {
-    const textBuffer = await window.crypto.subtle.decrypt(
-      { name: ALGORITHM, iv: deserializeBuffer(iv) },
-      key,
-      deserializeBuffer(cypher)
-    )
-
-    return decodeText(textBuffer)
-  } catch (error) {
-    return "Bad encryption"
   }
 }
 
