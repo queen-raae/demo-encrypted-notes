@@ -1,6 +1,7 @@
 import createError from "http-errors"
 import Joi from "joi"
 import { format } from "date-fns"
+import { nanoid } from "nanoid"
 
 import OctoStorage from "./../api-services/octo-storage"
 
@@ -37,19 +38,20 @@ export default async (req, res) => {
 
 const upsertHandler = async (req, res) => {
   // 1. Validate the data coming in
+  const defaultId = format(new Date(), "yyyy-MM-dd") + "-" + nanoid(10)
   const schema = Joi.object({
-    date: Joi.date().required(),
+    id: Joi.string().default(defaultId),
     entry: Joi.object({
       iv: Joi.string(),
       cypher: Joi.string(),
     }).required(),
   }).required()
 
-  const { date, entry } = await schema.validateAsync(req.body)
+  const { id, entry } = await schema.validateAsync(req.body)
 
   // 2. Upsert github file
   const file = await upsertFile({
-    filename: format(date, "yyyy-MM-dd"),
+    filename: id,
     content: JSON.stringify(entry),
   })
 
@@ -63,7 +65,7 @@ const getHandler = async (req, res) => {
   const files = await retrieveFiles()
   res.json({
     notes: files.map(({ filename, content }) => {
-      return { date: filename, entry: content }
+      return { id: filename, entry: content }
     }),
     message: "Retreived ",
   })

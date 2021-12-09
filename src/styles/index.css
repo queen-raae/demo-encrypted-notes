@@ -1,0 +1,56 @@
+main {
+  display: flex;
+  height: 100vh;
+}
+
+main > * {
+  padding: 2rem;
+  flex-basis: 50%;
+}
+
+main > header {
+  flex-basis: 10rem;
+  flex-grow: 0;
+  min-width: 8rem;
+}
+
+main > header > * {
+  margin: 0;
+  padding: 0;
+}
+
+main > header h1 a {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: filter 0.2s ease-in-out;
+  transition: transform 0.1s ease-in-out;
+}
+
+main > header h1 a:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+}
+
+main > header h1 a mark {
+  text-transform: uppercase;
+  font-size: 1rem;
+  margin-left: 0.2em;
+  padding: 0.2em 0.5em;
+  transition: underline 0.2s ease-in-out;
+}
+
+main > header ul {
+  list-style: none;
+  padding: 0;
+}
+
+main > header ul li {
+  margin: 0.5em 0;
+}
+
+main > form,
+main > form textarea {
+  width: 100%;
+  height: 80vh;
+}

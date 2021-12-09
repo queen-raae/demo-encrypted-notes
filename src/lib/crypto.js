@@ -8,22 +8,22 @@ import {
 const ALGORITHM = "AES-GCM"
 const KEY_LENGTH = 256
 
-export const encrypt = async (text, key, iv) => {
+export const encrypt = async ({ plaintext, key, iv }) => {
   const cypherBuffer = await window.crypto.subtle.encrypt(
     { name: ALGORITHM, iv: deserializeBuffer(iv) },
     key,
-    encodeText(text)
+    encodeText(plaintext)
   )
 
   return serializeBuffer(cypherBuffer)
 }
 
-export const decrypt = async (cypher, key, iv) => {
+export const decrypt = async ({ cyphertext, key, iv }) => {
   try {
     const textBuffer = await window.crypto.subtle.decrypt(
       { name: ALGORITHM, iv: deserializeBuffer(iv) },
       key,
-      deserializeBuffer(cypher)
+      deserializeBuffer(cyphertext)
     )
 
     return decodeText(textBuffer)
