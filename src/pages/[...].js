@@ -179,9 +179,9 @@ const NotePage = (props) => {
             <h3>Key as JWK</h3>
             <pre>{JSON.stringify(jwk, null, 2)}</pre>
             <h3>IV</h3>
-            <pre>{note.iv}</pre>
+            <code>{note.iv}</code>
             <h3>Cyphertext</h3>
-            <pre>{note.cyphertext}</pre>
+            <code>{note.cyphertext}</code>
           </div>
         </>
       )}
