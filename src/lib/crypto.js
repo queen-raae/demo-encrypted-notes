@@ -40,6 +40,10 @@ export const generateKey = async () => {
   )
 }
 
+export const exportAsJwk = async (key) => {
+  return await crypto.subtle.exportKey("jwk", key)
+}
+
 export const generateNonce = () => {
   const nonce = window.crypto.getRandomValues(new Int8Array(12))
   return serializeBuffer(nonce)

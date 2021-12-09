@@ -3,7 +3,13 @@ import { Link } from "gatsby"
 import localforage from "localforage"
 import axios from "axios"
 import "./../styles/index.css"
-import { encrypt, decrypt, generateKey, generateNonce } from "../lib/crypto"
+import {
+  encrypt,
+  decrypt,
+  generateKey,
+  generateNonce,
+  exportAsJwk,
+} from "../lib/crypto"
 
 const NOTES_ENDPOINT = "/api/notes"
 const NEW_NOTE = {
@@ -70,18 +76,23 @@ const NotePage = (props) => {
   const id = props["*"]
   const [status, setStatus] = useState("initial")
   const [key, setKey] = useState()
+  const [jwk, setJwk] = useState()
   const [notes, setNotes] = useState([])
   const [note, setNote] = useState()
 
   useEffect(() => {
     const initData = async () => {
       const key = await initKey()
+      const jwk = await exportAsJwk(key)
       const notes = await fetchNotes(key)
       const selectedNote = notes.find((note) => {
         return note.id === id
       })
 
+      console.log(jwk)
+
       setKey(key)
+      setJwk(jwk)
       setNotes(notes)
       setNote(selectedNote || NEW_NOTE)
       setStatus("ready")
@@ -165,6 +176,8 @@ const NotePage = (props) => {
           </form>
           <div>
             <h2>Crypto</h2>
+            <h3>Key as JWK</h3>
+            <pre>{JSON.stringify(jwk, null, 2)}</pre>
             <h3>IV</h3>
             <pre>{note.iv}</pre>
             <h3>Cyphertext</h3>
