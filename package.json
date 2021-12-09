@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@octokit/rest": "18.12.0",
+    "@raae/gatsby-plugin-svg-emoji-favicon": "^0.1.0",
     "axios": "^0.24.0",
     "date-fns": "2.27.0",
     "gatsby": "^4.3.0",
