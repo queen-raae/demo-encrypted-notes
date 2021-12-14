@@ -1,32 +1,27 @@
-import {
-  deserializeBuffer,
-  serializeBuffer,
-  encodeText,
-  decodeText,
-} from "./utils"
+import { encodeText, decodeBuffer } from "./utils"
 
 const ALGORITHM = "AES-GCM"
 const KEY_LENGTH = 256
 
 export const encrypt = async ({ plaintext, key, iv }) => {
-  const cypherBuffer = await window.crypto.subtle.encrypt(
-    { name: ALGORITHM, iv: deserializeBuffer(iv) },
+  const cyphertext = await window.crypto.subtle.encrypt(
+    { name: ALGORITHM, iv: iv },
     key,
     encodeText(plaintext)
   )
 
-  return serializeBuffer(cypherBuffer)
+  return cyphertext
 }
 
 export const decrypt = async ({ cyphertext, key, iv }) => {
   try {
     const textBuffer = await window.crypto.subtle.decrypt(
-      { name: ALGORITHM, iv: deserializeBuffer(iv) },
+      { name: ALGORITHM, iv: iv },
       key,
-      deserializeBuffer(cyphertext)
+      cyphertext
     )
 
-    return decodeText(textBuffer)
+    return decodeBuffer(textBuffer)
   } catch (error) {
     return "Bad encryption"
   }
@@ -46,5 +41,5 @@ export const exportAsJwk = async (key) => {
 
 export const generateNonce = () => {
   const nonce = window.crypto.getRandomValues(new Int8Array(12))
-  return serializeBuffer(nonce)
+  return nonce
 }

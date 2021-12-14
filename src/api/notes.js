@@ -55,7 +55,10 @@ const upsertHandler = async (req, res) => {
     content: JSON.stringify(entry),
   })
 
-  res.json({ note: file, message: "Note saved/updated" })
+  res.json({
+    note: { id, entry },
+    message: "Note saved/updated",
+  })
 }
 
 const getHandler = async (req, res) => {

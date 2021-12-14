@@ -13,7 +13,7 @@ main > * {
 }
 
 main > header {
-  flex-basis: 10rem;
+  flex-basis: 15rem;
   flex-grow: 0;
   min-width: 8rem;
 }
@@ -44,13 +44,23 @@ main > header h1 a mark {
   transition: underline 0.2s ease-in-out;
 }
 
-main > header ul {
+main > header menu {
   list-style: none;
-  padding: 0;
+  font-size: 0.8em;
 }
 
-main > header ul li {
+main > header menu li {
   margin: 0.5em 0;
+  padding: 0.5em;
+}
+
+main > header menu li.selected {
+  font-weight: bolder;
+}
+
+main > header menu li.selected::before {
+  content: "👉";
+  margin-right: 0.5em;
 }
 
 main > form,

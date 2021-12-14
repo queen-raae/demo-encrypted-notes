@@ -2,7 +2,7 @@ export const encodeText = (text) => {
   return new TextEncoder().encode(text)
 }
 
-export const decodeText = (buffer) => {
+export const decodeBuffer = (buffer) => {
   return new TextDecoder().decode(buffer)
 }
 

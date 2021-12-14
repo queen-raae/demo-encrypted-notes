@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react"
-import { Link } from "gatsby"
+import { Link, navigate } from "gatsby"
 import localforage from "localforage"
-import axios from "axios"
 import "./../styles/index.css"
 import {
   encrypt,
@@ -10,13 +9,8 @@ import {
   generateNonce,
   exportAsJwk,
 } from "../lib/crypto"
-
-const NOTES_ENDPOINT = "/api/notes"
-const NEW_NOTE = {
-  iv: generateNonce(),
-  cyphertext: "",
-  plaintext: "",
-}
+import { serializeBuffer } from "../lib/utils"
+import { fetchNotes, saveNote } from "../lib/api"
 
 const initKey = async () => {
   try {
@@ -30,50 +24,8 @@ const initKey = async () => {
   }
 }
 
-const fetchNotes = async (key) => {
-  try {
-    const { data } = await axios.get(NOTES_ENDPOINT)
-    const notePromises = data.notes.map(async ({ id, entry }) => {
-      return {
-        id: id,
-        date: id.substring(0, 10),
-        plaintext: await decrypt({
-          cyphertext: entry.cypher,
-          key: key,
-          iv: entry.iv,
-        }),
-        cyphertext: entry.cypher,
-        iv: entry.iv,
-      }
-    })
-
-    return await Promise.all(notePromises)
-  } catch (error) {
-    console.warn("Fetch Notes", error)
-    return []
-  }
-}
-
-const saveNote = async ({ id, iv, cyphertext }) => {
-  try {
-    const note = {
-      id: id,
-      entry: {
-        cypher: cyphertext,
-        iv: iv,
-      },
-    }
-
-    await axios.post(NOTES_ENDPOINT, note)
-    return true
-  } catch (error) {
-    console.warn("Save Note", error)
-    return false
-  }
-}
-
 const NotePage = (props) => {
-  const id = props["*"]
+  const selectedId = props["*"]
   const [status, setStatus] = useState("initial")
   const [key, setKey] = useState()
   const [jwk, setJwk] = useState()
@@ -82,33 +34,58 @@ const NotePage = (props) => {
 
   useEffect(() => {
     const initData = async () => {
+      console.log("initData")
+
       const key = await initKey()
       const jwk = await exportAsJwk(key)
-      const notes = await fetchNotes(key)
-      const selectedNote = notes.find((note) => {
-        return note.id === id
-      })
-
-      console.log(jwk)
 
       setKey(key)
       setJwk(jwk)
-      setNotes(notes)
-      setNote(selectedNote || NEW_NOTE)
-      setStatus("ready")
+
+      setNotes(await fetchNotes())
     }
 
     initData()
-  }, [id])
+  }, [])
+
+  useEffect(() => {
+    const initNote = async () => {
+      console.log("initNote")
+
+      const selectedNote = notes.find((note) => {
+        return note.id === selectedId
+      })
+
+      if (selectedNote) {
+        setNote({
+          ...selectedNote,
+          plaintext: await decrypt({ ...selectedNote, key }),
+        })
+      } else {
+        setNote({
+          iv: generateNonce(),
+          plaintext: "",
+        })
+      }
+
+      setStatus("ready")
+    }
+
+    initNote()
+  }, [selectedId, notes, key])
 
   const handleSubmitNote = async (event) => {
     event.preventDefault(event)
     setStatus("pending")
 
-    await saveNote(note)
-    await fetchNotes()
+    const { id } = await saveNote(note)
 
-    setStatus("ready")
+    if (id) {
+      setNotes(await fetchNotes())
+      navigate("/" + id)
+    } else {
+      setStatus("error")
+    }
   }
 
   const handleNoteChange = async (event) => {
@@ -136,21 +113,24 @@ const NotePage = (props) => {
             <span role="img">😎</span> <mark>Notes</mark>
           </Link>
         </h1>
+
         <menu>
-          <ul>
-            {notes
-              .sort((a, b) => (a.id > b.id ? -1 : 1))
-              .map(({ id, date, plaintext }) => {
-                const title = plaintext.substring(0, 20)
-                return (
-                  <li key={id}>
-                    <a href={id}>{title}</a>
-                    <br></br>
-                    <small>{date}</small>
-                  </li>
-                )
-              })}
-          </ul>
+          {notes
+            .sort((a, b) => (a.id > b.id ? -1 : 1))
+            .map((note) => {
+              const title = serializeBuffer(note.cyphertext).substring(0, 10)
+              return (
+                <li
+                  key={note.id}
+                  className={selectedId === note.id ? "selected" : ""}
+                >
+                  <Link to={`/${note.id}`}>
+                    {title} <br />
+                    <small>{note.id.substring(0, 10)}</small>
+                  </Link>
+                </li>
+              )
+            })}
         </menu>
       </header>
 
@@ -163,25 +143,26 @@ const NotePage = (props) => {
       {note && (
         <>
           <form onSubmit={handleSubmitNote}>
-            <h2>{note.id ? "Edit note" : "New note"}</h2>
+            <h2>Plaintext</h2>
             <textarea
               type="text"
               name="note"
               value={note.plaintext}
               onChange={handleNoteChange}
+              disabled={status !== "ready" || note.id}
             />
-            <button type="submit" disabled={status === "pending"}>
+            <button type="submit" disabled={status !== "ready" || note.id}>
               Save note
             </button>
           </form>
           <div>
             <h2>Crypto</h2>
-            <h3>Key as JWK</h3>
+            <h3>Key as JSON Web Key (JWK)</h3>
             <pre>{JSON.stringify(jwk, null, 2)}</pre>
-            <h3>IV</h3>
-            <code>{note.iv}</code>
+            <h3>Initialization Vector (IV)</h3>
+            <code>{serializeBuffer(note.iv)}</code>
             <h3>Cyphertext</h3>
-            <code>{note.cyphertext}</code>
+            <code>{serializeBuffer(note.cyphertext)}</code>
           </div>
         </>
       )}
