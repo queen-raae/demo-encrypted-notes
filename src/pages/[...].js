@@ -68,11 +68,7 @@ const NotePage = (props) => {
           <p>Loading...</p>
         </section>
       ) : (
-        <Note
-          note={selectedNote}
-          onSubmitNote={handleSubmitNote}
-          disabled={selectedNote?.id || notesMutation.isLoading}
-        />
+        <Note note={selectedNote} onSubmitNote={handleSubmitNote} />
       )}
     </main>
   )

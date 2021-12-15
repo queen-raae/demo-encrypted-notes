@@ -1,6 +1,5 @@
 import createError from "http-errors"
 import Joi from "joi"
-import { format } from "date-fns"
 import { nanoid } from "nanoid"
 
 import OctoStorage from "./../api-services/octo-storage"
@@ -38,7 +37,7 @@ export default async (req, res) => {
 
 const upsertHandler = async (req, res) => {
   // 1. Validate the data coming in
-  const defaultId = format(new Date(), "yyyy-MM-dd") + "-" + nanoid(10)
+  const defaultId = new Date().toISOString() + "-" + nanoid(10)
   const schema = Joi.object({
     id: Joi.string().default(defaultId),
     entry: Joi.object({
@@ -50,9 +49,12 @@ const upsertHandler = async (req, res) => {
   const { id, entry } = await schema.validateAsync(req.body)
 
   // 2. Upsert github file
-  const file = await upsertFile({
+  await upsertFile({
     filename: id,
-    content: JSON.stringify(entry),
+    content: JSON.stringify({
+      updated: new Date(),
+      ...entry,
+    }),
   })
 
   res.json({

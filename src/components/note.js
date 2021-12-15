@@ -1,36 +1,21 @@
 import React, { useState, useEffect } from "react"
-import localforage from "localforage"
-import "./../styles/index.css"
+
 import {
   encrypt,
   decrypt,
-  generateKey,
-  generateNonce,
+  initKey,
+  generateIv,
   exportAsJwk,
 } from "../lib/crypto"
 import { serializeBuffer } from "../lib/utils"
 
-const initKey = async () => {
-  try {
-    let key = await localforage.getItem("cryptokey")
-    if (!key) {
-      key = await generateKey()
-    }
-    return await localforage.setItem("cryptokey", key)
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const Note = ({ note: originalNote, onSubmitNote, disabled }) => {
+const Note = ({ note: originalNote, onSubmitNote }) => {
   const [key, setKey] = useState()
   const [jwk, setJwk] = useState()
   const [note, setNote] = useState()
 
   useEffect(() => {
     const init = async () => {
-      console.log("initData")
-
       const key = await initKey()
       const jwk = await exportAsJwk(key)
 
@@ -42,12 +27,15 @@ const Note = ({ note: originalNote, onSubmitNote, disabled }) => {
   }, [])
 
   useEffect(() => {
-    const decryptNote = async () => {
+    if (!key) return
+
+    const decryptOriginalNote = async () => {
       const thePlaintext = await decrypt({
         cyphertext: originalNote.cyphertext,
         iv: originalNote.iv,
         key,
       })
+
       setNote({
         ...originalNote,
         plaintext: thePlaintext,
@@ -55,7 +43,7 @@ const Note = ({ note: originalNote, onSubmitNote, disabled }) => {
     }
 
     if (originalNote) {
-      decryptNote()
+      decryptOriginalNote()
     } else {
       setNote({ plaintext: "" })
     }
@@ -63,7 +51,7 @@ const Note = ({ note: originalNote, onSubmitNote, disabled }) => {
 
   const handleNoteChange = async (event) => {
     const theText = event.target.value
-    const theIv = note?.iv || generateNonce()
+    const theIv = note?.iv || generateIv()
 
     setNote((note) => {
       return { ...note, plaintext: theText }
@@ -90,6 +78,8 @@ const Note = ({ note: originalNote, onSubmitNote, disabled }) => {
     onSubmitNote(note)
   }
 
+  if (!note) return null
+
   return (
     <>
       <form onSubmit={handleSubmit}>
@@ -99,12 +89,9 @@ const Note = ({ note: originalNote, onSubmitNote, disabled }) => {
           name="note"
           value={note?.plaintext || ""}
           onChange={handleNoteChange}
-          disabled={disabled || note.isProcessing}
+          disabled={note.isProcessing}
         />
-        <button
-          type="submit"
-          disabled={disabled || !note?.cyphertext || note.isProcessing}
-        >
+        <button type="submit" disabled={!note?.cyphertext || note.isProcessing}>
           Save note
         </button>
       </form>
