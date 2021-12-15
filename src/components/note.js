@@ -31,7 +31,7 @@ const Note = ({ note: originalNote, onSubmitNote }) => {
 
     const decryptOriginalNote = async () => {
       const thePlaintext = await decrypt({
-        cyphertext: originalNote.cyphertext,
+        ciphertext: originalNote.ciphertext,
         iv: originalNote.iv,
         key,
       })
@@ -57,14 +57,14 @@ const Note = ({ note: originalNote, onSubmitNote }) => {
       return { ...note, plaintext: theText }
     })
 
-    const theCypherText = await encrypt({
+    const theCipherText = await encrypt({
       plaintext: theText,
       iv: theIv,
       key,
     })
 
     setNote((note) => {
-      return { ...note, iv: theIv, cyphertext: theCypherText }
+      return { ...note, iv: theIv, ciphertext: theCipherText }
     })
   }
 
@@ -91,7 +91,7 @@ const Note = ({ note: originalNote, onSubmitNote }) => {
           onChange={handleNoteChange}
           disabled={note.isProcessing}
         />
-        <button type="submit" disabled={!note?.cyphertext || note.isProcessing}>
+        <button type="submit" disabled={!note?.ciphertext || note.isProcessing}>
           Save note
         </button>
       </form>
@@ -101,8 +101,8 @@ const Note = ({ note: originalNote, onSubmitNote }) => {
         <pre>{JSON.stringify(jwk, null, 2)}</pre>
         <h3>Initialization Vector (IV)</h3>
         <code>{serializeBuffer(note?.iv)}</code>
-        <h3>Cyphertext</h3>
-        <code>{serializeBuffer(note?.cyphertext)}</code>
+        <h3>Ciphertext</h3>
+        <code>{serializeBuffer(note?.ciphertext)}</code>
       </div>
     </>
   )

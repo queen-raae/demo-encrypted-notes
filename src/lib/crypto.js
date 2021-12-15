@@ -2,21 +2,21 @@ import { encodeText, decodeBuffer } from "./utils"
 import localforage from "localforage"
 
 export const encrypt = async ({ plaintext, key, iv }) => {
-  const cyphertext = await window.crypto.subtle.encrypt(
+  const ciphertext = await window.crypto.subtle.encrypt(
     { name: "AES-GCM", iv: iv },
     key,
     encodeText(plaintext)
   )
 
-  return cyphertext
+  return ciphertext
 }
 
-export const decrypt = async ({ cyphertext, key, iv }) => {
+export const decrypt = async ({ ciphertext, key, iv }) => {
   try {
     const textBuffer = await window.crypto.subtle.decrypt(
       { name: "AES-GCM", iv: iv },
       key,
-      cyphertext
+      ciphertext
     )
 
     return decodeBuffer(textBuffer)

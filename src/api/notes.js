@@ -42,7 +42,7 @@ const upsertHandler = async (req, res) => {
     id: Joi.string().default(defaultId),
     entry: Joi.object({
       iv: Joi.string(),
-      cypher: Joi.string(),
+      cipher: Joi.string(),
     }).required(),
   }).required()
 

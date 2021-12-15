@@ -7,7 +7,7 @@ const NOTES_ENDPOINT = "/api/notes"
 const transformNote = ({ id, entry }) => {
   return {
     id: id,
-    cyphertext: deserializeBuffer(entry.cypher),
+    ciphertext: deserializeBuffer(entry.cipher),
     iv: deserializeBuffer(entry.iv),
   }
 }
@@ -17,11 +17,11 @@ export const fetchNotes = async () => {
   return data.notes.map(transformNote)
 }
 
-export const saveNote = async ({ id, iv, cyphertext }) => {
+export const saveNote = async ({ id, iv, ciphertext }) => {
   const note = {
     id: id,
     entry: {
-      cypher: serializeBuffer(cyphertext),
+      cipher: serializeBuffer(ciphertext),
       iv: serializeBuffer(iv),
     },
   }

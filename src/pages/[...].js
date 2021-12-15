@@ -46,7 +46,7 @@ const NotePage = (props) => {
             {notesQuery.data
               .sort((a, b) => (a.id > b.id ? -1 : 1))
               .map((note) => {
-                const title = serializeBuffer(note.cyphertext).substring(0, 10)
+                const title = serializeBuffer(note.ciphertext).substring(0, 10)
                 return (
                   <li
                     key={note.id}
