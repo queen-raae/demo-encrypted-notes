@@ -1,11 +1,8 @@
 import { encodeText, decodeBuffer } from "./utils"
 
-const ALGORITHM = "AES-GCM"
-const KEY_LENGTH = 256
-
 export const encrypt = async ({ plaintext, key, iv }) => {
   const cyphertext = await window.crypto.subtle.encrypt(
-    { name: ALGORITHM, iv: iv },
+    { name: "AES-GCM", iv: iv },
     key,
     encodeText(plaintext)
   )
@@ -16,7 +13,7 @@ export const encrypt = async ({ plaintext, key, iv }) => {
 export const decrypt = async ({ cyphertext, key, iv }) => {
   try {
     const textBuffer = await window.crypto.subtle.decrypt(
-      { name: ALGORITHM, iv: iv },
+      { name: "AES-GCM", iv: iv },
       key,
       cyphertext
     )
@@ -29,7 +26,7 @@ export const decrypt = async ({ cyphertext, key, iv }) => {
 
 export const generateKey = async () => {
   return await window.crypto.subtle.generateKey(
-    { name: ALGORITHM, length: KEY_LENGTH },
+    { name: "AES-GCM", length: 256 },
     true,
     ["encrypt", "decrypt"]
   )
