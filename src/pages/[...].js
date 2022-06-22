@@ -6,6 +6,7 @@ import "./../styles/index.css"
 import { serializeBuffer } from "../lib/utils"
 import { fetchNotes, saveNote } from "../lib/api"
 import Note from "../components/note"
+import NoteLoading from "../components/note-loading"
 
 const NotePage = (props) => {
   const selectedId = props["*"]
@@ -64,9 +65,7 @@ const NotePage = (props) => {
       </header>
 
       {notesQuery.isLoading ? (
-        <section>
-          <p>Loading...</p>
-        </section>
+        <NoteLoading />
       ) : (
         <Note note={selectedNote} onSubmitNote={handleSubmitNote} />
       )}
